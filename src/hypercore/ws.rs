@@ -611,7 +611,8 @@ async fn connection(
             Some(stream) => stream,
             None => {
                 // Exponential backoff: 500ms, 1s, 2s, 4s, 5s (capped)
-                let delay_ms = (INITIAL_RECONNECT_DELAY_MS * (1u64 << reconnect_attempts))
+                // cap reconnect_attempts to 13 (= 8192), otherwise it'll overflow and panic the program
+                let delay_ms = (INITIAL_RECONNECT_DELAY_MS * (1u64 << reconnect_attempts.min(13)))
                     .min(MAX_RECONNECT_DELAY_MS);
                 reconnect_attempts = reconnect_attempts.saturating_add(1);
 
